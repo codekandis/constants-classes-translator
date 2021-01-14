@@ -1,0 +1,53 @@
+{
+	"name": "codekandis/constants-classes-translator",
+	"description": "This library translates constants from one class into constants of another class.",
+	"keywords": [
+		"php",
+		"constants classes translator",
+		"constants",
+		"constant",
+		"classes",
+		"class",
+		"translator"
+	],
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Christian Ramelow",
+			"email": "info@codekandis.net",
+			"homepage": "https://codekandis.net",
+			"role": "Developer"
+		}
+	],
+	"support": {
+		"email": "info@codekandis.net",
+		"issues": "https://github.com/codekandis/constants-classes-translator/issues",
+		"docs": "https://github.com/codekandis/constants-classes-translator/blob/master/README.md",
+		"source": "https://github.com/codekandis/constants-classes-translator/tree/master"
+	},
+	"require": {
+		"php": "^7.4"
+	},
+	"require-dev": {
+		"roave/security-advisories": "dev-master",
+		"codekandis/phpunit": "^2.0.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"CodeKandis\\ConstantsClassesTranslator\\": [
+				"src/"
+			]
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"CodeKandis\\ConstantsClassesTranslator\\Tests\\": [
+				"tests/"
+			]
+		}
+	},
+	"scripts": {
+	}
+}
