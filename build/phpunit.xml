@@ -9,6 +9,7 @@
 	cacheResult="false">
 	<testsuites>
 		<testsuite name="codekandis/constants-classes-translator">
+			<directory suffix="Test.php">../tests/UnitTests</directory>
 		</testsuite>
 	</testsuites>
 	<filter>
