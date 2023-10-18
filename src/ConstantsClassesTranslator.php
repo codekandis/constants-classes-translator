@@ -16,19 +16,19 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	 * Represents an error message if a constants class does not exist.
 	 * @var string
 	 */
-	protected const ERROR_CONSTANTS_CLASS_NOT_FOUND = 'The constants class `%s` does not exist.';
+	protected const string ERROR_CONSTANTS_CLASS_NOT_FOUND = 'The constants class `%s` does not exist.';
 
 	/**
 	 * Represents an error message if a constants class value has no corresponding constants class value.
 	 * @var string
 	 */
-	protected const ERROR_CORRESPONDING_CONSTANTS_CLASS_VALUE_NOT_FOUND = 'The constants class value `%s::%s` has no corresponding constants class value in constants class `%s`.';
+	protected const string ERROR_CORRESPONDING_CONSTANTS_CLASS_VALUE_NOT_FOUND = 'The constants class value `%s::%s` has no corresponding constants class value in constants class `%s`.';
 
 	/**
 	 * Represents an error message if a constants class value does not exist.
 	 * @var string
 	 */
-	protected const ERROR_CONSTANTS_CLASS_VALUE_NOT_FOUND = 'The constants class value `%s` does not exist.';
+	protected const string ERROR_CONSTANTS_CLASS_VALUE_NOT_FOUND = 'The constants class value `%s` does not exist.';
 
 	/**
 	 * Stores the reflected input constants class.
@@ -92,7 +92,7 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	/**
 	 * {@inheritDoc}
 	 */
-	public function translate( $value )
+	public function translate( null | bool | int | float | string | array $value ): null | bool | int | float | string | array
 	{
 		$outputValue             = '';
 		$reflectedInputConstants = $this->reflectedInputConstantsClass->getConstants();
