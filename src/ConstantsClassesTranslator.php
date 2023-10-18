@@ -51,7 +51,7 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	 */
 	public function __construct( string $inputConstantsClassClassName, string $outputConstantsClassClassName )
 	{
-		$this->initReflectedClasses( $inputConstantsClassClassName, $outputConstantsClassClassName );
+		$this->initializeReflectedClasses( $inputConstantsClassClassName, $outputConstantsClassClassName );
 	}
 
 	/**
@@ -61,7 +61,7 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	 * @throws ConstantsClassNotFoundException The input constants class does not exist.
 	 * @throws ConstantsClassNotFoundException The output constants class does not exist.
 	 */
-	private function initReflectedClasses( string $inputConstantsClassClassName, string $outputConstantsClassClassName ): void
+	private function initializeReflectedClasses( string $inputConstantsClassClassName, string $outputConstantsClassClassName ): void
 	{
 		try
 		{
