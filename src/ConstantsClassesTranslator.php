@@ -35,13 +35,13 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	 * Stores the reflected input constants class.
 	 * @var ReflectionClass
 	 */
-	private ReflectionClass $reflectedInputConstantsClass;
+	private readonly ReflectionClass $reflectedInputConstantsClass;
 
 	/**
 	 * Stores the reflected output constants class.
 	 * @var ReflectionClass
 	 */
-	private ReflectionClass $reflectedOutputConstantsClass;
+	private readonly ReflectionClass $reflectedOutputConstantsClass;
 
 	/**
 	 * Constructor method.
