@@ -119,6 +119,7 @@ class ConstantsClassesTranslator extends BaseObject implements ConstantsClassesT
 						$this->reflectedOutputConstantsClass->getName()
 					);
 				}
+
 				break;
 			}
 		}
