@@ -14,7 +14,6 @@ class ConstantsClassNotFoundException extends ClassNotFoundException implements 
 {
 	/**
 	 * Represents the exception message if a constants class does not exist.
-	 * @var string
 	 */
 	public const string EXCEPTION_MESSAGE_CONSTANTS_CLASS_NOT_FOUND = 'The constants class `%s` does not exist.';
 
