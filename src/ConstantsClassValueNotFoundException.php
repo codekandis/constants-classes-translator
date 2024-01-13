@@ -13,7 +13,6 @@ class ConstantsClassValueNotFoundException extends ConstantNotFoundException imp
 {
 	/**
 	 * Represents the exception message if a constants class value does not exist.
-	 * @var string
 	 */
 	public const string EXCEPTION_MESSAGE_CONSTANTS_CLASS_VALUE_NOT_FOUND = 'The constants class value `%s::%s` does not exist.';
 

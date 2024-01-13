@@ -4,7 +4,7 @@ namespace CodeKandis\ConstantsClassesTranslator;
 use CodeKandis\Types\InvalidTypeExceptionInterface;
 
 /**
- * Represents the interface of all constant classes translators.
+ * Represents the interface of any constant classes translator.
  * @package codekandis/constants-classes-translator
  * @author Christian Ramelow <info@codekandis.net>
  */
