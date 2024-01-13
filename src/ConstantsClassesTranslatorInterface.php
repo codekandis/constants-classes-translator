@@ -1,14 +1,12 @@
 <?php declare( strict_types = 1 );
 namespace CodeKandis\ConstantsClassesTranslator;
 
-use CodeKandis\Types\ObjectInterface;
-
 /**
  * Represents the interface of all constant classes translators.
  * @package codekandis/constants-classes-translator
  * @author Christian Ramelow <info@codekandis.net>
  */
-interface ConstantsClassesTranslatorInterface extends ObjectInterface
+interface ConstantsClassesTranslatorInterface
 {
 	/**
 	 * Translates a constants class value into the corresponding constants class value.

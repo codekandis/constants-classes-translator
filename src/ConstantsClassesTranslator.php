@@ -15,13 +15,11 @@ class ConstantsClassesTranslator extends BaseObject implements ConstantsClassesT
 {
 	/**
 	 * Stores the reflected input constants class.
-	 * @var ReflectionClass
 	 */
 	private readonly ReflectionClass $reflectedInputConstantsClass;
 
 	/**
 	 * Stores the reflected output constants class.
-	 * @var ReflectionClass
 	 */
 	private readonly ReflectionClass $reflectedOutputConstantsClass;
 
@@ -54,7 +52,7 @@ class ConstantsClassesTranslator extends BaseObject implements ConstantsClassesT
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * @inheritDoc
 	 */
 	#[Override]
 	public function translate( null|bool|int|float|string|array $value ): null|bool|int|float|string|array

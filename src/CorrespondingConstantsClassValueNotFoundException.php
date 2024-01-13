@@ -13,7 +13,6 @@ class CorrespondingConstantsClassValueNotFoundException extends ConstantNotFound
 {
 	/**
 	 * Represents the exception message if a corresponding constants class value does not exist.
-	 * @var string
 	 */
 	public const string EXCEPTION_MESSAGE_CORRESPONDING_CONSTANTS_CLASS_VALUE_NOT_FOUND = 'The input constants class value `%s::%s` has no corresponding output constants class value in constants class `%s`.';
 
