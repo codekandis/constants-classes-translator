@@ -76,6 +76,7 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 			);
 			throw new ConstantsClassNotFoundException( $exceptionMessage, 1 );
 		}
+
 		try
 		{
 			$this->reflectedOutputConstantsClass = new ReflectionClass( $outputConstantsClassClassName );
