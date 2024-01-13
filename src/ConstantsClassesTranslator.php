@@ -91,7 +91,7 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * @inheritDoc
 	 */
 	#[Override]
 	public function translate( null|bool|int|float|string|array $value ): null|bool|int|float|string|array
