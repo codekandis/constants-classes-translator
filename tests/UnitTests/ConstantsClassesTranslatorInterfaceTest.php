@@ -2,65 +2,83 @@
 namespace CodeKandis\ConstantsClassesTranslator\Tests\UnitTests;
 
 use CodeKandis\ConstantsClassesTranslator\ConstantsClassesTranslatorInterface;
-use CodeKandis\ConstantsClassesTranslator\Tests\DataProviders\UnitTests\ConstantsClassesTranslatorInterfaceTest\ConstantsClassesTranslatorsWithUnknownInputValuesAndExpectedExceptionsDataProvider;
-use CodeKandis\ConstantsClassesTranslator\Tests\DataProviders\UnitTests\ConstantsClassesTranslatorInterfaceTest\ConstantsClassesTranslatorsWithValidInputValuesAndExpectedOutputValuesDataProvider;
-use Iterator;
-use PHPUnit\Framework\TestCase;
+use CodeKandis\ConstantsClassesTranslator\ConstantsClassValueNotFoundExceptionInterface;
+use CodeKandis\ConstantsClassesTranslator\CorrespondingConstantsClassValueNotFoundExceptionInterface;
+use CodeKandis\ConstantsClassesTranslator\Tests\DataProviders\UnitTests\ConstantsClassesTranslatorInterfaceTest\ConstantsClassesTranslatorsWithNonCorrespondingValidInputValueExpectedThrowableClassNameAndExpectedThrowableMessageDataProvider;
+use CodeKandis\ConstantsClassesTranslator\Tests\DataProviders\UnitTests\ConstantsClassesTranslatorInterfaceTest\ConstantsClassesTranslatorsWithUnknownInputValueExpectedThrowableClassNameAndExpectedThrowableMessageDataProvider;
+use CodeKandis\ConstantsClassesTranslator\Tests\DataProviders\UnitTests\ConstantsClassesTranslatorInterfaceTest\ConstantsClassesTranslatorsWithValidInputValueAndExpectedTranslatedOutputValueDataProvider;
+use CodeKandis\PhpUnit\TestCase;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Throwable;
 
 /**
- * Represents the test case to test objects against the `ConstantsClassesTranslatorInterface`.
- * @package codekandis/constants-classes-translator
+ * Represents the test case of `CodeKandis\ConstantsClassesTranslator\ConstantsClassesTranslatorInterface`.
+ * @package codekandis/codes-message-translator
  * @author Christian Ramelow <info@codekandis.net>
  */
 class ConstantsClassesTranslatorInterfaceTest extends TestCase
 {
 	/**
-	 * instantiated constants classes translators with valid input values and expected output values.
-	 * @return Iterator The instantiated constants classes translators with valid input values and expected output values.
-	 */
-	public function constantsClassesTranslatorsWithValidInputValuesAndExpectedOutputValuesDataProvider(): Iterator
-	{
-		return new ConstantsClassesTranslatorsWithValidInputValuesAndExpectedOutputValuesDataProvider();
-	}
-
-	/**
-	 * Tests if `ConstantsClassesTranslatorInterface::translate()` translates correctly.
+	 * Tests if the method `ConstantsClassesTranslatorInterface::translate()` throws an `CodeKandis\ConstantsClassesTranslator\ConstantsClassValueNotFoundExceptionInterface` if an input value does not exist.
 	 * @param ConstantsClassesTranslatorInterface $constantsClassesTranslator The constants classes translator to test.
-	 * @param mixed $inputValue The input value to translate.
-	 * @param mixed $expectedOutputValue The expected translated output value.
-	 * @dataProvider constantsClassesTranslatorsWithValidInputValuesAndExpectedOutputValuesDataProvider
+	 * @param null|bool|int|float|string|array $unknownInputValue The unknown input value to pass.
+	 * @param string $expectedThrowableClassName The class name of the expected throwable.
+	 * @param string $expectedThrowableMessage The message of the expected throwable.
 	 */
-	public function testsIfMethodInterpretReturnsMessagesCorrectly( ConstantsClassesTranslatorInterface $constantsClassesTranslator, $inputValue, $expectedOutputValue ): void
+	#[DataProviderExternal( ConstantsClassesTranslatorsWithUnknownInputValueExpectedThrowableClassNameAndExpectedThrowableMessageDataProvider::class, 'provideData' )]
+	public function testIfMethodInterpretThrowsConstantsClassValueNotFoundExceptionInterfaceOnNonExistingInputValue( ConstantsClassesTranslatorInterface $constantsClassesTranslator, null|bool|int|float|string|array $unknownInputValue, string $expectedThrowableClassName, string $expectedThrowableMessage ): void
 	{
-		$resultedMessage = $constantsClassesTranslator->translate( $inputValue );
-
-		static::assertSame( $expectedOutputValue, $resultedMessage );
+		try
+		{
+			$constantsClassesTranslator->translate( $unknownInputValue );
+		}
+		catch ( Throwable $throwable )
+		{
+			static::assertInstanceOf( ConstantsClassValueNotFoundExceptionInterface::class, $throwable );
+			static::assertInstanceOf( $expectedThrowableClassName, $throwable );
+			static::assertSame(
+				$expectedThrowableMessage,
+				$throwable->getMessage()
+			);
+		}
 	}
 
 	/**
-	 * Provides instantiated constants classes translators with unknown input values, expected exception class names, expected exception codes and expected exception messages.
-	 * @return Iterator The instantiated constants classes translators with unknown input values, expected exception class names, expected exception codes and expected exception messages.
-	 */
-	public function constantsClassesTranslatorsWithUnknownInputValuesAndExpectedExceptionsDataProvider(): Iterator
-	{
-		return new ConstantsClassesTranslatorsWithUnknownInputValuesAndExpectedExceptionsDataProvider();
-	}
-
-	/**
-	 * Tests if `ConstantsClassesTranslatorInterface::translate()` throws an exception if an error occurred during translation.
+	 * Tests if the method `ConstantsClassesTranslatorInterface::translate()` throws an `CodeKandis\ConstantsClassesTranslator\CorrespondingConstantsClassValueNotFoundExceptionInterface` if an input value has no corresponding output value.
 	 * @param ConstantsClassesTranslatorInterface $constantsClassesTranslator The constants classes translator to test.
-	 * @param mixed $inputValue The input value to translate.
-	 * @param string $expectedExceptionClassName The class name of the expected exception.
-	 * @param int $expectedExceptionCode The code of the expected exception.
-	 * @param string $expectedExceptionMessage The message of the expected exception.
-	 * @dataProvider constantsClassesTranslatorsWithUnknownInputValuesAndExpectedExceptionsDataProvider
+	 * @param null|bool|int|float|string|array $nonCorrespondingValidInputValue The non-corresponding valid input value to pass.
+	 * @param string $expectedThrowableClassName The class name of the expected throwable.
+	 * @param string $expectedThrowableMessage The message of the expected throwable.
 	 */
-	public function testsIfMethodInterpretThrowsExceptionOnUnknownCode( ConstantsClassesTranslatorInterface $constantsClassesTranslator, $inputValue, string $expectedExceptionClassName, int $expectedExceptionCode, string $expectedExceptionMessage ): void
+	#[DataProviderExternal( ConstantsClassesTranslatorsWithNonCorrespondingValidInputValueExpectedThrowableClassNameAndExpectedThrowableMessageDataProvider::class, 'provideData' )]
+	public function testIfMethodInterpretThrowsCorrespondingConstantsClassValueNotFoundExceptionInterfaceNonCorrespondingOutputValue( ConstantsClassesTranslatorInterface $constantsClassesTranslator, null|bool|int|float|string|array $nonCorrespondingValidInputValue, string $expectedThrowableClassName, string $expectedThrowableMessage ): void
 	{
-		$this->expectException( $expectedExceptionClassName );
-		$this->expectExceptionCode( $expectedExceptionCode );
-		$this->expectExceptionMessage( $expectedExceptionMessage );
+		try
+		{
+			$constantsClassesTranslator->translate( $nonCorrespondingValidInputValue );
+		}
+		catch ( Throwable $throwable )
+		{
+			static::assertInstanceOf( CorrespondingConstantsClassValueNotFoundExceptionInterface::class, $throwable );
+			static::assertInstanceOf( $expectedThrowableClassName, $throwable );
+			static::assertSame(
+				$expectedThrowableMessage,
+				$throwable->getMessage()
+			);
+		}
+	}
 
-		$constantsClassesTranslator->translate( $inputValue );
+	/**
+	 * Tests if the method `ConstantsClassesTranslatorInterface::translate()` translates correctly.
+	 * @param ConstantsClassesTranslatorInterface $constantsClassesTranslator The constants classes translator to test.
+	 * @param null|bool|int|float|string|array $validInputValue The valid input value to translate to pass.
+	 * @param null|bool|int|float|string|array $expectedTranslatedOutputValue The expected translated output value.
+	 */
+	#[DataProviderExternal( ConstantsClassesTranslatorsWithValidInputValueAndExpectedTranslatedOutputValueDataProvider::class, 'provideData' )]
+	public function testIfMethodInterpretReturnsMessagesCorrectly( ConstantsClassesTranslatorInterface $constantsClassesTranslator, null|bool|int|float|string|array $validInputValue, null|bool|int|float|string|array $expectedTranslatedOutputValue ): void
+	{
+		$resultedTranslatedOutputValue = $constantsClassesTranslator->translate( $validInputValue );
+
+		static::assertSame( $expectedTranslatedOutputValue, $resultedTranslatedOutputValue );
 	}
 }
