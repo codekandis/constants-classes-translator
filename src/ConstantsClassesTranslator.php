@@ -1,10 +1,12 @@
 <?php declare( strict_types = 1 );
 namespace CodeKandis\ConstantsClassesTranslator;
 
+use CodeKandis\Types\InvalidTypeException;
 use Override;
 use ReflectionClass;
 use ReflectionException;
-use function sprintf;
+use function is_array;
+use function is_scalar;
 
 /**
  * Represents a constant classes translator.
@@ -13,24 +15,6 @@ use function sprintf;
  */
 class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 {
-	/**
-	 * Represents an error message if a constants class does not exist.
-	 * @var string
-	 */
-	protected const string ERROR_CONSTANTS_CLASS_NOT_FOUND = 'The constants class `%s` does not exist.';
-
-	/**
-	 * Represents an error message if a constants class value has no corresponding constants class value.
-	 * @var string
-	 */
-	protected const string ERROR_CORRESPONDING_CONSTANTS_CLASS_VALUE_NOT_FOUND = 'The constants class value `%s::%s` has no corresponding constants class value in constants class `%s`.';
-
-	/**
-	 * Represents an error message if a constants class value does not exist.
-	 * @var string
-	 */
-	protected const string ERROR_CONSTANTS_CLASS_VALUE_NOT_FOUND = 'The constants class value `%s` does not exist.';
-
 	/**
 	 * Stores the reflected input constants class.
 	 * @var ReflectionClass
@@ -47,8 +31,8 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	 * Constructor method.
 	 * @param string $inputConstantsClassClassName The input constants class class name.
 	 * @param string $outputConstantsClassClassName The output constants class class name.
-	 * @throws ConstantsClassNotFoundException The input constants class does not exist.
-	 * @throws ConstantsClassNotFoundException The output constants class does not exist.
+	 * @throws ConstantsClassNotFoundExceptionInterface The input constants class does not exist.
+	 * @throws ConstantsClassNotFoundExceptionInterface The output constants class does not exist.
 	 */
 	public function __construct( string $inputConstantsClassClassName, string $outputConstantsClassClassName )
 	{
@@ -59,8 +43,8 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	 * Initializes the reflected input and output constants classes.
 	 * @param string $inputConstantsClassClassName The input constants class class name.
 	 * @param string $outputConstantsClassClassName The output constants class class name.
-	 * @throws ConstantsClassNotFoundException The input constants class does not exist.
-	 * @throws ConstantsClassNotFoundException The output constants class does not exist.
+	 * @throws ConstantsClassNotFoundExceptionInterface The input constants class does not exist.
+	 * @throws ConstantsClassNotFoundExceptionInterface The output constants class does not exist.
 	 */
 	private function initializeReflectedClasses( string $inputConstantsClassClassName, string $outputConstantsClassClassName ): void
 	{
@@ -68,26 +52,46 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 		{
 			$this->reflectedInputConstantsClass = new ReflectionClass( $inputConstantsClassClassName );
 		}
-		catch ( ReflectionException $exception )
+		catch ( ReflectionException $throwable )
 		{
-			$exceptionMessage = sprintf(
-				static::ERROR_CONSTANTS_CLASS_NOT_FOUND,
-				$inputConstantsClassClassName
-			);
-			throw new ConstantsClassNotFoundException( $exceptionMessage, 1 );
+			throw ConstantsClassNotFoundException::with_classNameAndInnerThrowable( $inputConstantsClassClassName, $throwable );
 		}
 		try
 		{
 			$this->reflectedOutputConstantsClass = new ReflectionClass( $outputConstantsClassClassName );
 		}
-		catch ( ReflectionException $exception )
+		catch ( ReflectionException $throwable )
 		{
-			$exceptionMessage = sprintf(
-				static::ERROR_CONSTANTS_CLASS_NOT_FOUND,
-				$outputConstantsClassClassName
-			);
-			throw new ConstantsClassNotFoundException( $exceptionMessage, 2 );
+			throw ConstantsClassNotFoundException::with_classNameAndInnerThrowable( $outputConstantsClassClassName, $throwable );
 		}
+	}
+
+	/**
+	 * Determines if a specific value is `null`, a scalar or a (nested) array of scalars.
+	 * @param mixed $value The value to check.
+	 * @return bool `true` if the value is `null`, a scalar or a (nested) array of scalars, otherwise `false`.
+	 */
+	private function isValueTypeValid( mixed $value ): bool
+	{
+		if ( null === $value || true === is_scalar( $value ) )
+		{
+			return true;
+		}
+
+		if ( false === is_array( $value ) )
+		{
+			return false;
+		}
+
+		foreach ( $value as $element )
+		{
+			if ( false === $this->isValueTypeValid( $element ) )
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -96,6 +100,11 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	#[Override]
 	public function translate( null | bool | int | float | string | array $value ): null | bool | int | float | string | array
 	{
+		if ( false === $this->isValueTypeValid( $value ) )
+		{
+			throw InvalidTypeException::with_invalidTypeAndExpectedTypes( 'array<mixed>', 'null', 'scalar', 'nested-array<null|scalar>' );
+		}
+
 		$outputValue             = '';
 		$reflectedInputConstants = $this->reflectedInputConstantsClass->getConstants();
 		foreach ( $reflectedInputConstants as $reflectedInputConstantName => $reflectedInputConstantValue )
@@ -105,13 +114,11 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 				$outputValue = $this->reflectedOutputConstantsClass->getConstant( $reflectedInputConstantName );
 				if ( false === $outputValue )
 				{
-					$exceptionMessage = sprintf(
-						static::ERROR_CORRESPONDING_CONSTANTS_CLASS_VALUE_NOT_FOUND,
+					throw CorrespondingConstantsClassValueNotFoundException::with_inputClassNameInputConstantNameAndOutputClassName(
 						$this->reflectedInputConstantsClass->getName(),
 						$reflectedInputConstantName,
 						$this->reflectedOutputConstantsClass->getName()
 					);
-					throw new CorrespondingConstantsClassValueNotFoundException( $exceptionMessage, 3 );
 				}
 				break;
 			}
@@ -119,11 +126,7 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 
 		if ( '' === $outputValue )
 		{
-			$exceptionMessage = sprintf(
-				static::ERROR_CONSTANTS_CLASS_VALUE_NOT_FOUND,
-				$value
-			);
-			throw new ConstantsClassValueNotFoundException( $exceptionMessage, 4 );
+			throw ConstantsClassValueNotFoundException::with_classNameAndUnknownValue( $this->reflectedInputConstantsClass->getName(), $value );
 		}
 
 		return $outputValue;
