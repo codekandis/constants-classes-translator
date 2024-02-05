@@ -1,6 +1,7 @@
 <?php declare( strict_types = 1 );
 namespace CodeKandis\ConstantsClassesTranslator;
 
+use Override;
 use ReflectionClass;
 use ReflectionException;
 use function sprintf;
@@ -92,6 +93,7 @@ class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
 	/**
 	 * {@inheritDoc}
 	 */
+	#[Override]
 	public function translate( null | bool | int | float | string | array $value ): null | bool | int | float | string | array
 	{
 		$outputValue             = '';
