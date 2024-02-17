@@ -1,6 +1,7 @@
 {
 	"name": "codekandis/constants-classes-translator",
-	"description": "This library translates constants from one class into constants of another class.",
+	"description": "`codekandis/constants-classes-translator` is a library to translate values from constants classes into values of another constants classes.",
+	"version": "dev-development",
 	"keywords": [
 		"php",
 		"constants classes translator",
@@ -28,11 +29,12 @@
 		"source": "https://github.com/codekandis/constants-classes-translator/tree/master"
 	},
 	"require": {
-		"php": "^7.4"
+		"php": ">=8.3"
 	},
 	"require-dev": {
 		"roave/security-advisories": "dev-master",
-		"codekandis/phpunit": "^3"
+		"codekandis/phpunit": "^5.0.0",
+		"rector/rector": "^0.18.5"
 	},
 	"autoload": {
 		"psr-4": {
@@ -43,11 +45,12 @@
 	},
 	"autoload-dev": {
 		"psr-4": {
+			"CodeKandis\\ConstantsClassesTranslator\\Build\\": [
+				"build/"
+			],
 			"CodeKandis\\ConstantsClassesTranslator\\Tests\\": [
 				"tests/"
 			]
 		}
-	},
-	"scripts": {
 	}
 }
