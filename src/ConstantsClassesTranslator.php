@@ -1,6 +1,7 @@
 <?php declare( strict_types = 1 );
 namespace CodeKandis\ConstantsClassesTranslator;
 
+use CodeKandis\Types\BaseObject;
 use CodeKandis\Types\InvalidTypeException;
 use Override;
 use ReflectionClass;
@@ -13,7 +14,7 @@ use function is_scalar;
  * @package codekandis/constants-classes-translator
  * @author Christian Ramelow <info@codekandis.net>
  */
-class ConstantsClassesTranslator implements ConstantsClassesTranslatorInterface
+class ConstantsClassesTranslator extends BaseObject implements ConstantsClassesTranslatorInterface
 {
 	/**
 	 * Stores the reflected input constants class.
