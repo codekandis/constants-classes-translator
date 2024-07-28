@@ -2,7 +2,7 @@
 namespace CodeKandis\ConstantsClassesTranslator\Tests\Fixtures;
 
 /**
- * Represents a messages constants class fixture.
+ * Represents a fixture of a constants class of messages.
  * @package codekandis/constants-classes-translator
  * @author Christian Ramelow <info@codekandis.net>
  */
@@ -10,19 +10,19 @@ abstract class MessagesFixture
 {
 	/**
 	 * Represents the first message.
-	 * @var int
+	 * @var string
 	 */
-	public const FIRST = 'Represents the first message.';
+	public const string FIRST = 'Represents the first message.';
 
 	/**
 	 * Represents the second message.
-	 * @var int
+	 * @var string
 	 */
-	public const SECOND = 'Represents the second message.';
+	public const string SECOND = 'Represents the second message.';
 
 	/**
 	 * Represents the third message.
-	 * @var int
+	 * @var string
 	 */
-	public const THIRD = 'Represents the third message.';
+	public const string THIRD = 'Represents the third message.';
 }

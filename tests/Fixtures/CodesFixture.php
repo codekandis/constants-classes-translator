@@ -2,7 +2,7 @@
 namespace CodeKandis\ConstantsClassesTranslator\Tests\Fixtures;
 
 /**
- * Represents a codes constants class fixture.
+ * Represents a fixture of a constants class of codes.
  * @package codekandis/constants-classes-translator
  * @author Christian Ramelow <info@codekandis.net>
  */
@@ -12,23 +12,23 @@ abstract class CodesFixture
 	 * Represents the first code.
 	 * @var int
 	 */
-	public const FIRST = 0;
+	public const int FIRST = 0;
 
 	/**
 	 * Represents the second code.
 	 * @var int
 	 */
-	public const SECOND = 1;
+	public const int SECOND = 1;
 
 	/**
 	 * Represents the third code.
 	 * @var int
 	 */
-	public const THIRD = 2;
+	public const int THIRD = 2;
 
 	/**
 	 * Represents the fourth code.
 	 * @var int
 	 */
-	public const FOURTH = 3;
+	public const int FOURTH = 3;
 }

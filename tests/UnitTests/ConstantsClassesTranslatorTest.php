@@ -1,67 +1,69 @@
 <?php declare( strict_types = 1 );
 namespace CodeKandis\ConstantsClassesTranslator\Tests\UnitTests;
 
-use CodeKandis\ConstantsClassesTranslator\Tests\DataProviders\UnitTests\ConstantsClassesTranslatorTest\ConstantsClassesTranslatorClassNamesWithInvalidValuesAndExpectedExceptionsDataProvider;
-use CodeKandis\ConstantsClassesTranslator\Tests\DataProviders\UnitTests\ConstantsClassesTranslatorTest\ConstantsClassesTranslatorClassNamesWithValidConstantsClassesNamesDataProvider;
-use Iterator;
-use PHPUnit\Framework\TestCase;
+use CodeKandis\ConstantsClassesTranslator\ConstantsClassNotFoundExceptionInterface;
+use CodeKandis\ConstantsClassesTranslator\Tests\DataProviders\UnitTests\ConstantsClassesTranslatorTest\ConstantsClassesTranslatorClassNamesWithUnknownInputConstantsClassClassNameValidOutputConstantsClassClassNameExpectedThrowableClassNameAndExpectedThrowableMessageDataProvider;
+use CodeKandis\ConstantsClassesTranslator\Tests\DataProviders\UnitTests\ConstantsClassesTranslatorTest\ConstantsClassesTranslatorClassNamesWithValidInputConstantsClassClassNameUnknownOutputConstantsClassClassNameExpectedThrowableClassNameAndExpectedThrowableMessageDataProvider;
+use CodeKandis\PhpUnit\TestCase;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Throwable;
 
 /**
- * Represents the test case to test objects against the `ConstantsClassesTranslator`.
+ * Represents the test case of `CodeKandis\ConstantsClassesTranslator\ConstantsClassesTranslator`.
  * @package codekandis/codes-message-translator
  * @author Christian Ramelow <info@codekandis.net>
  */
 class ConstantsClassesTranslatorTest extends TestCase
 {
 	/**
-	 * Provides constants classes translator class names with valid input and output constants classes class names and expected constants classes translator class names.
-	 * @return Iterator The constants classes translator class names with valid input and output constants classes class names and expected constants classes translator class names.
+	 * Tests if the instantiation of the constants classes translator throws `CodeKandis\ConstantsClassesTranslator\ConstantsClassNotFoundException` on unknown input constants class class name.
+	 * @param string $constantsClassesTranslatorClassName The class name of the constants classes translator to instantiate and test.
+	 * @param string $unknownInputConstantsClassClassName The class name of the unknown input constants class to pass.
+	 * @param string $validOutputConstantsClassClassName The class name of the valid output constants class to pass.
+	 * @param string $expectedThrowableClassName The class name of the expected throwable.
+	 * @param string $expectedThrowableMessage The message of the expected throwable.
 	 */
-	public function constantsClassesTranslatorClassNamesWithValidConstantsClassesNamesDataProvider(): Iterator
+	#[DataProviderExternal( ConstantsClassesTranslatorClassNamesWithUnknownInputConstantsClassClassNameValidOutputConstantsClassClassNameExpectedThrowableClassNameAndExpectedThrowableMessageDataProvider::class, 'provideData' )]
+	public function testIfInstantiationThrowsConstantsClassNotFoundExceptionInterfaceOnInvalidInputConstantsClassClassName( string $constantsClassesTranslatorClassName, string $unknownInputConstantsClassClassName, string $validOutputConstantsClassClassName, string $expectedThrowableClassName, string $expectedThrowableMessage ): void
 	{
-		return new ConstantsClassesTranslatorClassNamesWithValidConstantsClassesNamesDataProvider();
+		try
+		{
+			new $constantsClassesTranslatorClassName( $unknownInputConstantsClassClassName, $validOutputConstantsClassClassName );
+		}
+		catch ( Throwable $throwable )
+		{
+			static::assertInstanceOf( ConstantsClassNotFoundExceptionInterface::class, $throwable );
+			static::assertInstanceOf( $expectedThrowableClassName, $throwable );
+			static::assertSame(
+				$expectedThrowableMessage,
+				$throwable->getMessage()
+			);
+		}
 	}
 
 	/**
-	 * Tests if the instantiation of the constants classes translator passes.
-	 * @param string $constantsClassesTranslatorClassName The class name of the constants classes translator to instantiate.
-	 * @param string $inputConstantsClassClassName The class name of the input constants class.
-	 * @param string $outputConstantsClassClassName The class name of the output constants class.
-	 * @param string $expectedConstantsClassesTranslatorClassName The expected class name the constants classes translator is an instance of.
-	 * @dataProvider constantsClassesTranslatorClassNamesWithValidConstantsClassesNamesDataProvider
+	 * Tests if the instantiation of the constants classes translator throws `CodeKandis\ConstantsClassesTranslator\ConstantsClassNotFoundException` on unknown output constants class class name.
+	 * @param string $constantsClassesTranslatorClassName The class name of the constants classes translator to instantiate and test.
+	 * @param string $validInputConstantsClassClassName The class name of the valid input constants class to pass.
+	 * @param string $unknownOutputConstantsClassClassName The class name of the unknown output constants class to pass.
+	 * @param string $expectedThrowableClassName The class name of the expected throwable.
+	 * @param string $expectedThrowableMessage The message of the expected throwable.
 	 */
-	public function testIfInstantiationReturnsCorrectly( string $constantsClassesTranslatorClassName, string $inputConstantsClassClassName, string $outputConstantsClassClassName, string $expectedConstantsClassesTranslatorClassName ): void
+	#[DataProviderExternal( ConstantsClassesTranslatorClassNamesWithValidInputConstantsClassClassNameUnknownOutputConstantsClassClassNameExpectedThrowableClassNameAndExpectedThrowableMessageDataProvider::class, 'provideData' )]
+	public function testIfInstantiationThrowsConstantsClassNotFoundExceptionInterfaceOnInvalidOutputConstantsClassClassName( string $constantsClassesTranslatorClassName, string $validInputConstantsClassClassName, string $unknownOutputConstantsClassClassName, string $expectedThrowableClassName, string $expectedThrowableMessage ): void
 	{
-		$codeMessageTranslator = new $constantsClassesTranslatorClassName( $inputConstantsClassClassName, $outputConstantsClassClassName );
-
-		static::assertInstanceOf( $expectedConstantsClassesTranslatorClassName, $codeMessageTranslator );
-	}
-
-	/**
-	 * Provides constants classes translator class names with invalid input and output values, epxected exception class names, expected exception codes and expected exception messages.
-	 * @return Iterator The constants classes translator class names with invalid input and output values, epxected exception class names, expected exception codes and expected exception messages.
-	 */
-	public function constantsClassesTranslatorClassNamesWithInvalidValuesAndExpectedExceptionsDataProvider(): Iterator
-	{
-		return new ConstantsClassesTranslatorClassNamesWithInvalidValuesAndExpectedExceptionsDataProvider();
-	}
-
-	/**
-	 * Tests if the instantiation of the code message translator throws exceptions on invalid constants classes class names.
-	 * @param string $constantsClassesTranslatorClassName The class name of the constants classes translator to instantiate.
-	 * @param string $inputConstantsClassClassName The class name of the input constants class.
-	 * @param string $outputConstantsClassClassName The class name of the output constants class.
-	 * @param string $expectedExceptionClassName The class name of the expected exception.
-	 * @param int $expectedExceptionCode The code of the expected exception.
-	 * @param string $expectedExceptionMessage The message of the expected exception.
-	 * @dataProvider constantsClassesTranslatorClassNamesWithInvalidValuesAndExpectedExceptionsDataProvider
-	 */
-	public function testIfInstantiationThrowsExceptionsOnInvalidCodesOrMessagesClassName( string $constantsClassesTranslatorClassName, string $inputConstantsClassClassName, string $outputConstantsClassClassName, string $expectedExceptionClassName, int $expectedExceptionCode, string $expectedExceptionMessage ): void
-	{
-		$this->expectException( $expectedExceptionClassName );
-		$this->expectExceptionCode( $expectedExceptionCode );
-		$this->expectExceptionMessage( $expectedExceptionMessage );
-
-		new $constantsClassesTranslatorClassName( $inputConstantsClassClassName, $outputConstantsClassClassName );
+		try
+		{
+			new $constantsClassesTranslatorClassName( $validInputConstantsClassClassName, $unknownOutputConstantsClassClassName );
+		}
+		catch ( Throwable $throwable )
+		{
+			static::assertInstanceOf( ConstantsClassNotFoundExceptionInterface::class, $throwable );
+			static::assertInstanceOf( $expectedThrowableClassName, $throwable );
+			static::assertSame(
+				$expectedThrowableMessage,
+				$throwable->getMessage()
+			);
+		}
 	}
 }
