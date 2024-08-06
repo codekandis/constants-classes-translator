@@ -1,0 +1,19 @@
+---
+name: Run tests
+
+on:
+  push:
+    branches: [
+      "main"
+    ]
+  pull_request:
+    branches: [
+      "main"
+    ]
+
+permissions:
+  contents: read
+
+jobs:
+  php-run-tests:
+    uses: ./.github/workflows/_php-run-tests.yml
