@@ -1,0 +1,104 @@
+name: PHP – run tests
+
+on:
+  workflow_call:
+
+jobs:
+  load-ci-config-env:
+    uses: ./.github/workflows/_load-ci-config-env.yml
+
+  determine-composer-dependency-versions:
+    needs: load-ci-config-env
+    runs-on: ubuntu-latest
+    env: ${{ fromJSON( needs.load-ci-config-env.outputs.CI_CONFIG_ENV ) }}
+    outputs:
+      DEPENDENCY_VERSIONS: ${{ steps.determine-composer-dependency-versions.outputs.dependency_versions }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Determine composer dependency versions
+        id: determine-composer-dependency-versions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f composer.lock ]]
+          then
+            dependencyVersions="${DEPENDENCY_VERSIONS_WITHOUT_LOCK_FILE}"
+          else
+            dependencyVersions="${DEPENDENCY_VERSIONS_WITH_LOCK_FILE}"
+          fi
+
+          echo "DEPENDENCY_VERSIONS=${dependencyVersions}"
+          echo "DEPENDENCY_VERSIONS=${dependencyVersions}" >> "$GITHUB_OUTPUT"
+
+  tests:
+    needs:
+      - load-ci-config-env
+      - determine-composer-dependency-versions
+    runs-on: ubuntu-latest
+    env: ${{ fromJSON( needs.load-ci-config-env.outputs.CI_CONFIG_ENV ) }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        dependency-versions: ${{ fromJSON( needs.determine-composer-dependency-versions.outputs.DEPENDENCY_VERSIONS ) }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Resolve PHP extensions
+        id: resolve-php-extensions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! command -v jq >/dev/null 2>&1
+          then
+            sudo apt-get update -y >/dev/null
+            sudo apt-get install -y jq >/dev/null
+          fi
+
+          mapfile -t phpExtensions < <( jq -r '
+            [
+              ( .require // {} | to_entries[] | select( .key | startswith( "ext-" ) ) | .key ),
+              ( .["require-dev"] // {} | to_entries[] | select( .key | startswith( "ext-" ) ) | .key )
+            ]
+            | add
+            | unique[]
+            | sub( "^ext-"; "" )
+          ' composer.json )
+          [[ ${#phpExtensions[@]} -gt 0 ]] && printf -v commaSeparatedPhpExtensions '%s,' "${phpExtensions[@]}" || commaSeparatedPhpExtensions=""
+
+          commaSeparatedPhpExtensions="${commaSeparatedPhpExtensions%,}"
+
+          echo "phpExtensions=${commaSeparatedPhpExtensions}" >> "$GITHUB_OUTPUT"
+          echo "Resolved phpExtensions: ${commaSeparatedPhpExtensions:-<none>}"
+
+      - name: Setup PHP `${{ env.PHP_VERSION }}`
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          extensions: ${{ steps.resolve-php-extensions.outputs.phpExtensions }}
+          ini-values: error_reporting=E_ALL, display_errors=On, zend.assertions=1
+          tools: composer:v2
+
+      - name: Resolve & install dependencies (with cache)
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.dependency-versions }}
+          composer-options: --no-ansi --no-interaction --no-progress --prefer-dist --prefer-stable
+
+      - name: Validate composer files
+        run: composer validate --strict --no-ansi
+
+      - name: Run tests
+        env:
+          XDEBUG_MODE: off
+          COMPOSER_DISABLE_XDEBUG_WARN: 1
+        run: composer run-script --no-ansi --no-interaction test

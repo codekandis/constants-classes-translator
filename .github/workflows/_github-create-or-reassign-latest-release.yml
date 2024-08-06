@@ -1,0 +1,85 @@
+name: GitHub - create or reassign latest release
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project files
+        uses: actions/checkout@v4
+
+      - name: Read release specific changelog
+        id: read_release_changelog
+        run: |
+          set -euo pipefail
+
+          githubRef="${{ github.ref_name }}"
+          echo "Release: ${githubRef}"
+
+          changelogPath="$( find . -maxdepth 2 -type f -name "CHANGELOG.md" )"
+          echo "Changelog: ${changelogPath}"
+
+          tag="$( echo "${githubRef}" | sed -n -r "s/^([0-9]|[1-9][0-9]+)\.([0-9]|[1-9][0-9]+)\.([0-9]|[1-9][0-9]+)$/\1\\\.\2\\\.\3/p" )"
+          sectionStartRegEx=$"^## \[${tag}\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          sectionEndRegEx=$"^\[${tag}\]: https?://.+$"
+
+          echo "Section starts with: ${sectionStartRegEx}"
+          echo "Section ends with: ${sectionEndRegEx}"
+
+          releaseChangelog=""
+          isReadingSection=false
+          while read -r changelogLine
+          do
+            if [[ "${changelogLine}" =~ ${sectionStartRegEx} ]]
+            then
+              isReadingSection=true
+            fi
+
+            if [[ "${isReadingSection}" = true ]]
+            then
+              releaseChangelog+="${changelogLine}"$'\n'
+            fi
+
+            if [[ "${isReadingSection}" = false ]] && [[ "${changelogLine}" =~ ${sectionEndRegEx} ]]
+            then
+              echo "Failed: section end before section start"
+
+              break
+            fi
+
+            if [[ "${isReadingSection}" = true ]] && [[ "${changelogLine}" =~ ${sectionEndRegEx} ]]
+            then
+              isReadingSection=false
+              echo "Succeeded: section read"
+
+              break
+            fi
+          done < "${changelogPath}"
+
+          if [[ "${isReadingSection}" = true ]]
+          then
+            echo "Failed: section does not end"
+
+            exit 1
+          fi
+
+          if [[ -z "${releaseChangelog}" ]]
+          then
+            echo "Failed: section not found"
+
+            exit 1
+          fi
+
+          echo "release_changelog<<EOF" >> ${GITHUB_OUTPUT}
+          echo "${releaseChangelog}" >> ${GITHUB_OUTPUT}
+          echo "EOF" >> ${GITHUB_OUTPUT}
+
+      - name: Create release with changelog
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body: ${{ steps.read_release_changelog.outputs.release_changelog }}
+          draft: false
