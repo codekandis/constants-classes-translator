@@ -1,8 +1,10 @@
 <?php declare( strict_types = 1 );
 namespace CodeKandis\ConstantsClassesTranslator;
 
+use CodeKandis\ToolKit\Validators\IsClassNameValidator;
 use CodeKandis\Types\BaseObject;
 use CodeKandis\Types\InvalidTypeException;
+use CodeKandis\Types\UnexpectedErrorException;
 use Override;
 use ReflectionClass;
 use ReflectionException;
@@ -34,25 +36,34 @@ class ConstantsClassesTranslator extends BaseObject implements ConstantsClassesT
 	 * @param string $outputConstantsClassClassName The output constants class class name.
 	 * @throws ConstantsClassNotFoundExceptionInterface The input constants class does not exist.
 	 * @throws ConstantsClassNotFoundExceptionInterface The output constants class does not exist.
+	 * @throws UnexpectedErrorException An unexpected error occured.
 	 */
 	public function __construct( string $inputConstantsClassClassName, string $outputConstantsClassClassName )
 	{
-		try
+		if (
+			false === ( new IsClassNameValidator() )
+				->validate( $inputConstantsClassClassName )
+		)
 		{
-			$this->reflectedInputConstantsClass = new ReflectionClass( $inputConstantsClassClassName );
+			throw ConstantsClassNotFoundException::withNonExistentClassName( $inputConstantsClassClassName );
 		}
-		catch ( ReflectionException $throwable )
+
+		if (
+			false === ( new IsClassNameValidator() )
+				->validate( $outputConstantsClassClassName )
+		)
 		{
-			throw ConstantsClassNotFoundException::with_classNameAndInnerThrowable( $inputConstantsClassClassName, $throwable );
+			throw ConstantsClassNotFoundException::withNonExistentClassName( $outputConstantsClassClassName );
 		}
 
 		try
 		{
+			$this->reflectedInputConstantsClass  = new ReflectionClass( $inputConstantsClassClassName );
 			$this->reflectedOutputConstantsClass = new ReflectionClass( $outputConstantsClassClassName );
 		}
 		catch ( ReflectionException $throwable )
 		{
-			throw ConstantsClassNotFoundException::with_classNameAndInnerThrowable( $outputConstantsClassClassName, $throwable );
+			throw UnexpectedErrorException::withPreviousCatchedThrowable( $throwable );
 		}
 	}
 
@@ -92,7 +103,7 @@ class ConstantsClassesTranslator extends BaseObject implements ConstantsClassesT
 	{
 		if ( false === $this->isValueTypeValid( $value ) )
 		{
-			throw InvalidTypeException::with_invalidTypeAndExpectedTypes( 'array<mixed>', 'null', 'scalar', 'nested-array<null|scalar>' );
+			throw InvalidTypeException::withInvalidTypeAndExpectedTypes( 'array<mixed>', 'null', 'scalar', 'nested-array<null|scalar>' );
 		}
 
 		$outputValue             = '';
