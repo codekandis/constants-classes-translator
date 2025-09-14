@@ -1,10 +1,15 @@
 <?php declare( strict_types = 1 );
 namespace CodeKandis\ConstantsClassesTranslator;
 
-use CodeKandis\ToolKit\Validators\IsClassNameValidator;
+use CodeKandis\ToolKit\Validators\IsInterfaceOrClassNameValidator;
 use CodeKandis\Types\BaseObject;
+use CodeKandis\Types\InterfaceOrClassConstantNotFoundException;
+use CodeKandis\Types\InterfaceOrClassConstantValueNotFoundException;
+use CodeKandis\Types\InterfaceOrClassNotFoundException;
+use CodeKandis\Types\InterfaceOrClassNotFoundExceptionInterface;
 use CodeKandis\Types\InvalidTypeException;
 use CodeKandis\Types\UnexpectedErrorException;
+use CodeKandis\Types\UnexpectedErrorExceptionInterface;
 use Override;
 use ReflectionClass;
 use ReflectionException;
@@ -12,52 +17,53 @@ use function is_array;
 use function is_scalar;
 
 /**
- * Represents a constant classes translator.
+ * Represents a constant interfaces and classes translator.
  * @package codekandis/constants-classes-translator
  * @author Christian Ramelow <info@codekandis.net>
  */
 class ConstantsClassesTranslator extends BaseObject implements ConstantsClassesTranslatorInterface
 {
 	/**
-	 * Stores the reflected input constants class.
+	 * Stores the reflected input constants interface or class.
 	 */
-	private readonly ReflectionClass $reflectedInputConstantsClass;
+	private readonly ReflectionClass $reflectedInputConstantsInterfaceOrClass;
 
 	/**
-	 * Stores the reflected output constants class.
+	 * Stores the reflected output constants interface or class.
 	 */
-	private readonly ReflectionClass $reflectedOutputConstantsClass;
+	private readonly ReflectionClass $reflectedOutputConstantsInterfaceOrClass;
 
 	/**
 	 * Constructor method.
-	 * @param string $inputConstantsClassClassName The input constants class class name.
-	 * @param string $outputConstantsClassClassName The output constants class class name.
-	 * @throws ConstantsClassNotFoundExceptionInterface The input constants class does not exist.
-	 * @throws ConstantsClassNotFoundExceptionInterface The output constants class does not exist.
-	 * @throws UnexpectedErrorException An unexpected error occured.
+	 * @param string $inputConstantsInterfaceOrClassName The input constants interface or class name.
+	 * @param string $outputConstantsInterfaceOrClassName The output constants interface or class name.
+	 * @throws InterfaceOrClassNotFoundExceptionInterface The input constants interface or class does not exist.
+	 * @throws InterfaceOrClassNotFoundExceptionInterface The output constants interface or class does not exist.
+	 * @throws UnexpectedErrorExceptionInterface An unexpected error occured.
 	 */
-	public function __construct( string $inputConstantsClassClassName, string $outputConstantsClassClassName )
+	public function __construct(
+		private readonly string $inputConstantsInterfaceOrClassName,
+		private readonly string $outputConstantsInterfaceOrClassName
+	)
 	{
 		if (
-			false === ( new IsClassNameValidator() )
-				->validate( $inputConstantsClassClassName )
+			false === new IsInterfaceOrClassNameValidator()->validate( $this->inputConstantsInterfaceOrClassName )
 		)
 		{
-			throw ConstantsClassNotFoundException::withNonExistentClassName( $inputConstantsClassClassName );
+			throw InterfaceOrClassNotFoundException::withNonExistentInterfaceOrClassName( $this->inputConstantsInterfaceOrClassName );
 		}
 
 		if (
-			false === ( new IsClassNameValidator() )
-				->validate( $outputConstantsClassClassName )
+			false === new IsInterfaceOrClassNameValidator()->validate( $this->outputConstantsInterfaceOrClassName )
 		)
 		{
-			throw ConstantsClassNotFoundException::withNonExistentClassName( $outputConstantsClassClassName );
+			throw InterfaceOrClassNotFoundException::withNonExistentInterfaceOrClassName( $this->outputConstantsInterfaceOrClassName );
 		}
 
 		try
 		{
-			$this->reflectedInputConstantsClass  = new ReflectionClass( $inputConstantsClassClassName );
-			$this->reflectedOutputConstantsClass = new ReflectionClass( $outputConstantsClassClassName );
+			$this->reflectedInputConstantsInterfaceOrClass  = new ReflectionClass( $this->inputConstantsInterfaceOrClassName );
+			$this->reflectedOutputConstantsInterfaceOrClass = new ReflectionClass( $this->outputConstantsInterfaceOrClassName );
 		}
 		catch ( ReflectionException $throwable )
 		{
@@ -104,31 +110,31 @@ class ConstantsClassesTranslator extends BaseObject implements ConstantsClassesT
 			throw InvalidTypeException::withInvalidTypeAndExpectedTypes( 'array<mixed>', 'null', 'scalar', 'nested-array<null|scalar>' );
 		}
 
-		$outputValue             = '';
-		$reflectedInputConstants = $this->reflectedInputConstantsClass->getConstants();
-		foreach ( $reflectedInputConstants as $reflectedInputConstantName => $reflectedInputConstantValue )
+		$inputInterfaceOrClassConstantName = null;
+
+		$reflectedInputInterfaceOrClassConstants = $this->reflectedInputConstantsInterfaceOrClass->getConstants();
+		foreach ( $reflectedInputInterfaceOrClassConstants as $fetchedReflectedInputClassConstantName => $fetchedReflectedInputInterfaceOrClassConstantValue )
 		{
-			if ( $reflectedInputConstantValue === $value )
+			if ( $fetchedReflectedInputInterfaceOrClassConstantValue === $value )
 			{
-				$outputValue = $this->reflectedOutputConstantsClass->getConstant( $reflectedInputConstantName );
-				if ( false === $outputValue )
-				{
-					throw CorrespondingConstantsClassValueNotFoundException::with_inputClassNameInputConstantNameAndOutputClassName(
-						$this->reflectedInputConstantsClass->getName(),
-						$reflectedInputConstantName,
-						$this->reflectedOutputConstantsClass->getName()
-					);
-				}
+				$inputInterfaceOrClassConstantName = $fetchedReflectedInputClassConstantName;
 
 				break;
 			}
 		}
 
-		if ( '' === $outputValue )
+		if ( null === $inputInterfaceOrClassConstantName )
 		{
-			throw ConstantsClassValueNotFoundException::with_classNameAndUnknownValue( $this->reflectedInputConstantsClass->getName(), $value );
+			throw InterfaceOrClassConstantValueNotFoundException::withInterfaceOrClassNameAndNonExistentConstantValue( $this->inputConstantsInterfaceOrClassName, $value );
 		}
 
-		return $outputValue;
+		if (
+			false === $this->reflectedOutputConstantsInterfaceOrClass->hasConstant( $inputInterfaceOrClassConstantName )
+		)
+		{
+			throw InterfaceOrClassConstantNotFoundException::withInterfaceOrClassNameAndNonExistentConstantName( $this->outputConstantsInterfaceOrClassName, $inputInterfaceOrClassConstantName );
+		}
+
+		return $this->reflectedOutputConstantsInterfaceOrClass->getConstant( $inputInterfaceOrClassConstantName );
 	}
 }
