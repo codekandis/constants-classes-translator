@@ -1,9 +1,8 @@
 {
 	"name": "codekandis/constants-classes-translator",
-	"description": "This library translates constants from one class into constants of another class.",
+	"description": "`codekandis/constants-classes-translator` is a library to translate values from constants classes into values of another constants classes.",
 	"keywords": [
 		"php",
-		"constants classes translator",
 		"constants",
 		"constant",
 		"classes",
@@ -28,11 +27,14 @@
 		"source": "https://github.com/codekandis/constants-classes-translator/tree/master"
 	},
 	"require": {
-		"php": "^7.4"
+		"php": ">=8.4",
+		"codekandis/toolkit": "^1.0.0",
+		"codekandis/types": "^1.0.0"
 	},
 	"require-dev": {
 		"roave/security-advisories": "dev-master",
-		"codekandis/phpunit": "^3"
+		"codekandis/phpunit": "^5.0.0",
+		"rector/rector": "^1.2.10"
 	},
 	"autoload": {
 		"psr-4": {
@@ -49,5 +51,13 @@
 		}
 	},
 	"scripts": {
+		"test": [
+			"Composer\\Config::disableProcessTimeout",
+			"/usr/bin/env php ./vendor/phpunit/phpunit/phpunit --configuration ./build/phpunit.xml -dxdebug.mode=off --no-coverage"
+		],
+		"test-coverage": [
+			"Composer\\Config::disableProcessTimeout",
+			"/usr/bin/env php ./vendor/phpunit/phpunit/phpunit --configuration ./build/phpunit.xml -dxdebug.mode=coverage"
+		]
 	}
 }

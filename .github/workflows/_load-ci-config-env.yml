@@ -1,0 +1,78 @@
+name: Load CI configuration `env.yml`
+
+on:
+  workflow_call:
+    outputs:
+      CI_CONFIG_ENV:
+        value: ${{ jobs.load-ci-config-env.outputs.CI_CONFIG_ENV }}
+
+env:
+  CI_CONFIG_ENV_PATH: .ci/env.yml
+
+jobs:
+  load-ci-config-env:
+    runs-on: ubuntu-latest
+    outputs:
+      CI_CONFIG_ENV: ${{ steps.unpack-ci-config-env.outputs.ciConfigEnv }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unpack all CI env variables
+        id: unpack-ci-config-env
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! command -v yq >/dev/null 2>&1
+          then
+            sudo apt-get update -y >/dev/null
+            sudo apt-get install -y yq jq >/dev/null
+          fi
+
+          jsonEntries="$( yq -o=json '. | to_entries' ${CI_CONFIG_ENV_PATH} )"
+
+          if [[ -z "${jsonEntries}" ]] || [[ "${jsonEntries}" == "null" ]] || [[ "${jsonEntries}" == "[]" ]]
+          then
+            jsonMap="{}"
+          else
+            jsonMap="$(
+              jq -r -c '
+                map(
+                  {
+                    key: (
+                      .key
+                      | tostring
+                      | ascii_upcase
+                      | gsub( "[^A-Z0-9_]"; "_" )
+                    ),
+                    value: (
+                      if ( .value | type ) == "array" or ( .value | type ) == "object"
+                      then
+                      (
+                        .value | tojson
+                      )
+                      else
+                      (
+                        if .value == null
+                        then
+                          ""
+                        else
+                          (
+                            .value | tostring
+                          )
+                        end
+                      )
+                      end
+                    )
+                  }
+                )
+                | from_entries
+              ' <<<"$jsonEntries"
+            )"
+          fi
+
+          echo "CI config env:"
+          echo "${jsonMap}"
+
+          echo "ciConfigEnv=${jsonMap}" >> "${GITHUB_OUTPUT}"

@@ -1,0 +1,21 @@
+name: Run tests and create or reassign latest GitHub release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  php-run-tests:
+    uses: ./.github/workflows/_php-run-tests.yml
+
+  github-create-or-reassign-latest-release:
+    needs: php-run-tests
+    uses: ./.github/workflows/_github-create-or-reassign-latest-release.yml

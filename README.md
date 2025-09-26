@@ -5,11 +5,12 @@
 [![Minimum PHP Version][xtlink-php-version-badge]][xtlink-php-net]
 ![Code Coverage][xtlink-code-coverage-badge]
 
-With the [`ConstantsClassesTranslator`][srclink-constants-classes-translator] you are able to translate values from constants classes into values from another constants classes. E. g. it's useful with third party libraries throwing exceptions with error codes but without meaningful messages.
+`codekandis/constants-classes-translator` is a library to translate values from constants classes into values of another constants classes.
 
 ## Index
 
 * [Installation](#installation)
+* [Testing](#testing)
 * [How to use](#how-to-use)
 * [Exceptions](#exceptions)
 
@@ -21,62 +22,82 @@ Install the latest version with
 $ composer require codekandis/constants-classes-translator
 ```
 
+## Testing
+
+Test the code with
+
+```bash
+$ composer run-script test
+```
+
+If you want to retrieve a full coverage report run
+
+```bash
+$ composer run-script test-coverage
+```
+
 ## How to use
 
-### Define some error codes and error messages
+This example demonstrates how to simply translate between error codes and error messages.
+
+First create interfaces or classes containing identical named constants representing error codes and error messages.
 
 ```php
-abstract class ErrorCodes
+interface ErrorCodesInterface
 {
-    public const ERROR_ONE   = 1;
-    public const ERROR_TWO   = 2;
-    public const ERROR_THREE = 3;
+    public const int ERROR_ONE   = 1;
+    public const int ERROR_TWO   = 2;
+    public const int ERROR_THREE = 3;
 }
 
-abstract class ErrorMessages
+class ErrorMessages
 {
-    public const ERROR_ONE   = 'Error one occurred.';
-    public const ERROR_TWO   = 'Error two occurred.';
-    public const ERROR_THREE = 'Error three occurred.';
+    public const string ERROR_ONE   = 'Error one occurred.';
+    public const string ERROR_TWO   = 'Error two occurred.';
+    public const string ERROR_THREE = 'Error three occurred.';
 }
 ```
 
-### Instantiate the [`ConstantsClassesTranslator`][srclink-constants-classes-translator]
+Next translate error codes into error messages.
 
 ```php
-/** returns 'Error two occurred.' */
-( new ConstantsClassesTranslator( ErrorCodes::class, ErrorMessages::class ) )
-    ->translate( ErrorCodes::ERROR_TWO );
+new ConstantsClassesTranslator( ErrorCodesInterface::class, ErrorMessages::class )
+    ->translate( ErrorCodesInterface::ERROR_TWO );
+/**
+ * Error two occured.
+ */
 ```
 
-or vice versa
+Or translate error messages into error codes.
 
 ```php
-/** returns 2 */
-( new ConstantsClassesTranslator( ErrorMessages::class, ErrorCodes::class ) )
+new ConstantsClassesTranslator( ErrorMessages::class, ErrorCodesInterface::class )
     ->translate( ErrorMessages::ERROR_TWO );
+/**
+ * 2
+ */
 ```
 
 ## Exceptions
 
-The [`ConstantsClassesTranslator`][srclink-constants-classes-translator] throws several exceptions which inherits from [`ConstantsClassesTranslatorException`][srclink-constants-classes-translator-exception].
+The [`ConstantsClassesTranslator`][srclink-ConstantsClassesTranslator] throws several exceptions.
 
-- [`ConstantsClassNotFoundException`][srclink-constants-class-not-found-exception] the passed constants class name does not exist
-- [`CorrespondingConstantsClassValueNotFoundException`][srclink-corresponding-constants-class-value-not-found-exception] the constants class value has no corresponding constants class value
-- [`ConstantsClassValueNotFoundException`][srclink-constants-class-value-not-found-exception] the constants class value does not exist
+* [`InterfaceOrClassNotFoundException`][xtsrclink-codekandis-types-InterfaceOrClassNotFoundException] a passed constants interface or class does not exist
+* [`InterfaceOrClassConstantNotFoundException`][xtsrclink-codekandis-types-InterfaceOrClassConstantNotFoundException] a constant of a specific interface or class does not exist
+* [`InterfaceOrClassConstantValueNotFoundException`][xtsrclink-codekandis-types-InterfaceOrClassConstantValueNotFoundException] a constant with a specific value of a specific interface or class does not exist
 
 
 
 [xtlink-version-badge]: https://img.shields.io/badge/version-1.1.0-blue.svg
 [xtlink-license-badge]: https://img.shields.io/badge/license-MIT-yellow.svg
-[xtlink-php-version-badge]: https://img.shields.io/badge/php-%3E%3D%207.4-8892BF.svg
+[xtlink-php-version-badge]: https://img.shields.io/badge/php-%3E%3D%208.4-8892BF.svg
 [xtlink-code-coverage-badge]: https://img.shields.io/badge/coverage-100%25-green.svg
 [xtlink-php-net]: https://php.net
 
 [srclink-changelog]: ./CHANGELOG.md
 [srclink-license]: ./LICENSE
-[srclink-constants-classes-translator]: ./src/ConstantsClassesTranslator.php
-[srclink-constants-classes-translator-exception]: ./src/ConstantsClassesTranslatorException.php
-[srclink-constants-class-not-found-exception]: ./src/ConstantsClassNotFoundException.php
-[srclink-corresponding-constants-class-value-not-found-exception]: ./src/CorrespondingConstantsClassValueNotFoundException.php
-[srclink-constants-class-value-not-found-exception]: ./src/ConstantsClassValueNotFoundException.php
+[srclink-ConstantsClassesTranslator]: ./src/ConstantsClassesTranslator.php
+
+[xtsrclink-codekandis-types-InterfaceOrClassNotFoundException]: https://github.com/codekandis/types/blob/1.x/src/InterfaceOrClassNotFoundException.php
+[xtsrclink-codekandis-types-InterfaceOrClassConstantNotFoundException]: https://github.com/codekandis/types/blob/1.x/src/InterfaceOrClassConstantNotFoundException.php
+[xtsrclink-codekandis-types-InterfaceOrClassConstantValueNotFoundException]: https://github.com/codekandis/types/blob/1.x/src/InterfaceOrClassConstantValueNotFoundException.php
